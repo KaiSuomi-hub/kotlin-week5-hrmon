@@ -4,13 +4,38 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.example.kotlin_week5_hrmon.ui.theme.Kotlinweek5hrmonTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,11 +44,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Kotlinweek5hrmonTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    CalorieScreen()
                 }
             }
         }
@@ -31,17 +56,110 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Heading(title: String) {
     Text(
-        text = "Hello $name!",
-        modifier = modifier
+        text = title,
+        fontSize = 24.sp,
+        textAlign = TextAlign.Center,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 16.dp)
     )
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    Kotlinweek5hrmonTheme {
-        Greeting("Android")
+fun CalorieScreen() {
+    val weightInput = remember { mutableStateOf("") }
+    val male = remember { mutableStateOf(true) }
+    val ageInput = remember { mutableStateOf("") }
+    Column(
+        modifier = Modifier.padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Heading(title = stringResource(R.string.calories))
+        WeightField(weightInput = weightInput.value, onValueChange = { weightInput.value = it })
+        AgeField(ageInput = ageInput.value, onValueChange = { ageInput.value = it })
+        GenderChoices(male.value, setGenderMale = { male.value = it })
     }
+}
+
+@Composable
+fun WeightField(weightInput: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = weightInput,
+        onValueChange = onValueChange,
+        label = { Text(text = "Enter your weight") },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+    )
+}
+
+@Composable
+fun AgeField(ageInput: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = ageInput,
+        onValueChange = onValueChange,
+        label = { Text(text = "Enter your age") },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+    )
+}
+
+@Composable
+fun GenderChoices(male: Boolean, setGenderMale: (Boolean) -> Unit) {
+    Column(Modifier.selectableGroup()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(
+                selected = male,
+                onClick = { setGenderMale(true) }
+            )
+            Text(text = "Male")
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(
+                selected = !male,
+                onClick = { setGenderMale(false) }
+            )
+            Text(text = "Female")
+        }
+    }
+}
+
+@Composable
+fun IntensityList(onClick: (Float) -> Unit) {
+    val expanded = remember { mutableStateOf(false) }
+    val selectedText = remember { mutableStateOf("Light") }
+    val textFieldSize = remember { mutableStateOf(Size.Zero) }
+
+    val icon = if (expanded.value) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+
+    Column {
+        OutlinedTextField(
+            value = selectedText.value,
+            onValueChange = { selectedText.value = it },
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    textFieldSize.value = coordinates.size.toSize()
+                },
+            label = { Text("Select intensity") },
+            trailingIcon = {
+                Icon(icon, contentDescription = "Expand or collapse",
+                    Modifier.clickable { expanded.value = !expanded.value }
+                )
+            })
+    }
+}
+
+@Composable
+fun CalorieScreen() {
+    val weightInput = remember { mutableStateOf("")
+        val male = remember { mutableStateOf(true)
+Column {
+    
+}
 }
