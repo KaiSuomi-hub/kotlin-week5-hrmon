@@ -11,11 +11,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,7 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,16 +77,20 @@ fun Heading(title: String) {
 @Composable
 fun CalorieScreen() {
     val weightInput = remember { mutableStateOf("") }
+    var weight = weightInput.value.toIntOrNull() ?: 0
     val male = remember { mutableStateOf(true) }
-    val ageInput = remember { mutableStateOf("") }
+    val intensity = remember { mutableStateOf(1.3f) }
+    val result = remember { mutableStateOf(0) }
     Column(
         modifier = Modifier.padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Heading(title = stringResource(R.string.calories))
+        Heading(title = stringResource(id = R.string.app_name))
         WeightField(weightInput = weightInput.value, onValueChange = { weightInput.value = it })
-        AgeField(ageInput = ageInput.value, onValueChange = { ageInput.value = it })
         GenderChoices(male.value, setGenderMale = { male.value = it })
+        IntensityList(onClick = { intensity.value = it })
+        Text(text = result.value.toString(), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
+        Calculation(male = male, weight = weight, intensity = intensity, setResult = { result = it })
     }
 }
 
@@ -133,7 +143,7 @@ fun IntensityList(onClick: (Float) -> Unit) {
     val expanded = remember { mutableStateOf(false) }
     val selectedText = remember { mutableStateOf("Light") }
     val textFieldSize = remember { mutableStateOf(Size.Zero) }
-
+    val items = listOf("Light", "Usual", "Moderate", "Hard", "Very hard")
     val icon = if (expanded.value) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
     Column {
@@ -151,15 +161,56 @@ fun IntensityList(onClick: (Float) -> Unit) {
                 Icon(icon, contentDescription = "Expand or collapse",
                     Modifier.clickable { expanded.value = !expanded.value }
                 )
-            })
+            }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+        ) {
+            items.forEach { item ->
+                DropdownMenuItem(onClick = {
+                    selectedText =
+                    expanded = false
+                    var intensity: Float = when (item) {
+                        "Light" -> 1.3f
+                        "Usual" -> 1.5f
+                        "Moderate" -> 1.7f
+                        "Hard" -> 2.0f
+                        "Very hard" -> 2.2f
+                        else -> 1.3f
+                    }
+                    onClick(intensity)
+                }) {
+                    Text(text = item)
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun CalorieScreen() {
-    val weightInput = remember { mutableStateOf("")
-        val male = remember { mutableStateOf(true)
-Column {
-    
+fun Calculation(male: Boolean, weight: Int, age: Int, intensity: Float, setResult: (Int) -> Unit) {
+    Button(
+        onClick = {
+            val result = if (male) {
+                (66 + (6.23 * weight) + (12.7 * age) - (6.8 * age)) * intensity
+            } else {
+                (655 + (4.35 * weight) + (4.7 * age) - (4.7 * age)) * intensity
+            }
+            setResult(result.toInt())
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(text = "Calculate")
+    }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    Kotlinweek5hrmonTheme {
+        Heading("Calories")
+    }
 }
