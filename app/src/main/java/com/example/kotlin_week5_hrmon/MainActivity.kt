@@ -80,7 +80,7 @@ fun CalorieScreen() {
     var weight = weightInput.value.toIntOrNull() ?: 0
     val male = remember { mutableStateOf(true) }
     val intensity = remember { mutableStateOf(1.3f) }
-    val result = remember { mutableStateOf(0) }
+    var result = remember { mutableStateOf(0) }
     Column(
         modifier = Modifier.padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -90,7 +90,7 @@ fun CalorieScreen() {
         GenderChoices(male.value, setGenderMale = { male.value = it })
         IntensityList(onClick = { intensity.value = it })
         Text(text = result.value.toString(), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
-        Calculation(male = male, weight = weight, intensity = intensity, setResult = { result = it })
+        Calculation(male = male.value, weight = weight, intensity = intensity.value, setResult = { result.value = it })
     }
 }
 
@@ -106,17 +106,6 @@ fun WeightField(weightInput: String, onValueChange: (String) -> Unit) {
     )
 }
 
-@Composable
-fun AgeField(ageInput: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = ageInput,
-        onValueChange = onValueChange,
-        label = { Text(text = "Enter your age") },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-    )
-}
 
 @Composable
 fun GenderChoices(male: Boolean, setGenderMale: (Boolean) -> Unit) {
@@ -164,16 +153,16 @@ fun IntensityList(onClick: (Float) -> Unit) {
             }
         )
         DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
+    expanded = expanded.value,
+    onDismissRequest = { expanded.value = false },
             modifier = Modifier
-                .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+                .width(with(LocalDensity.current) { textFieldSize.value.width.toDp() })
         ) {
             items.forEach { item ->
-                DropdownMenuItem(onClick = {
-                    selectedText =
-                    expanded = false
-                    var intensity: Float = when (item) {
+                DropdownMenuItem(text = { Text(text = item) }, onClick = {
+                    selectedText.value = item
+                    expanded.value = false
+                    val intensity = when (item) {
                         "Light" -> 1.3f
                         "Usual" -> 1.5f
                         "Moderate" -> 1.7f
@@ -182,29 +171,26 @@ fun IntensityList(onClick: (Float) -> Unit) {
                         else -> 1.3f
                     }
                     onClick(intensity)
-                }) {
-                    Text(text = item)
-                }
+                })
+
             }
         }
     }
 }
 
 @Composable
-fun Calculation(male: Boolean, weight: Int, age: Int, intensity: Float, setResult: (Int) -> Unit) {
+fun Calculation(male: Boolean, weight: Int,   intensity: Float, setResult: (Int) -> Unit) {
     Button(
+        content = { Text("Calculate") },
         onClick = {
-            val result = if (male) {
-                (66 + (6.23 * weight) + (12.7 * age) - (6.8 * age)) * intensity
-            } else {
-                (655 + (4.35 * weight) + (4.7 * age) - (4.7 * age)) * intensity
-            }
-            setResult(result.toInt())
-        },
+        if (male) {
+            setResult(((879 + 10.2 * weight) * intensity).toInt())
+        } else {
+            setResult(((795 + 7.18 * weight) * intensity).toInt())
+        }
+                  },
         modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(text = "Calculate")
-    }
+    )
 }
 
 @Preview(showBackground = true)
